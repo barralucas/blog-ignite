@@ -1,7 +1,6 @@
 .container {
     display: flex;
     width: 100%;
-    max-width: 1120px;
     height: 105px;
     margin: 0 auto;
 }
@@ -17,4 +16,9 @@
         font-size: 25px;
         color: var(--highlight);
     }
+}
+
+.link {
+    cursor: pointer;
+    text-decoration: none;
 }

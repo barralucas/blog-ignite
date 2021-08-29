@@ -1,6 +1,7 @@
 import { GetStaticProps } from 'next';
 import Header from '../components/Header';
-
+import { PostPreview } from '../components/PostPreview';
+import styles from './home.module.scss';
 
 import { getPrismicClient } from '../services/prismic';
 
@@ -28,9 +29,10 @@ interface HomeProps {
 
 export default function Home() {
   return (
-    <>
-      
-    </>
+    <div className={styles.container}>
+      <Header />
+      <PostPreview />
+    </div>
   );
 }
 
