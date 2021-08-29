@@ -32,6 +32,10 @@ export default function Home() {
     <div className={styles.container}>
       <Header />
       <PostPreview />
+      <PostPreview />
+      <PostPreview />
+      <PostPreview />
+      <PostPreview />
     </div>
   );
 }
