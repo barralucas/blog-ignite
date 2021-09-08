@@ -37,17 +37,15 @@ export default function Home({ postsPagination }: HomeProps) {
     <div className={styles.container}>
       <Header />
 
-
       {postsPagination.results.map(post => (
-        <PostPreview title={post.data.title} subtitle={post.data.subtitle} author={post.data.author} date={post.first_publication_date} />
+        <PostPreview slug={post.uid} title={post.data.title} subtitle={post.data.subtitle} author={post.data.author} date={post.first_publication_date} />
       ))}
-
 
     </div>
   );
 }
 
-export const getStaticProps = async () => {
+export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query([
     Prismic.Predicates.at('document.type', 'posts')
@@ -77,7 +75,7 @@ export const getStaticProps = async () => {
       }
     }
   })
-
+  
   const postsPagination = {
     next_page: 'string',
     results
