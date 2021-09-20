@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 // import commonStyles from '../styles/common.module.scss';
-// import styles from './home.module.scss';
 
 interface Post {
   uid?: string;
@@ -33,6 +32,8 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  console.log(postsPagination)
+  
   return (
     <div className={styles.container}>
       <Header />
@@ -55,9 +56,8 @@ export const getStaticProps: GetStaticProps = async () => {
       'posts.subtitle',
       'posts.author'
     ],
-    pageSize: 10,
   });
-
+console.log(postsResponse)
   const results = postsResponse.results.map(post => {
     return {
       uid: post.uid,
@@ -77,7 +77,7 @@ export const getStaticProps: GetStaticProps = async () => {
   })
   
   const postsPagination = {
-    next_page: 'string',
+    next_page: postsResponse.next_page,
     results
   }
 
