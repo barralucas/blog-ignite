@@ -9,6 +9,7 @@ import { getPrismicClient } from '../../services/prismic';
 // import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import Header from '../../components/Header';
+import { Markup } from 'interweave';
 
 interface Post {
   first_publication_date: string | null;
@@ -45,10 +46,16 @@ export default function Post({ post }: PostProps) {
     return (
       <div className={styles.container}>
         <Header />
-        <div className={styles.content}>
+        <div>
           <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="responsive" />
 
-          {post.data.content[0].heading}
+          <div className={styles.content}>
+          <Markup content={`<h1>${RichText.asHtml(post.data.title)}</h1>`} />
+          <Markup content={String(post.data.content[0].body[0])} />
+          <Markup content={post.data.content[1].heading} />
+          <Markup content={String(post.data.content[1].body[0])} />
+          </div>
+
         </div>
       </div>
     );
@@ -75,12 +82,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', context.params.slug.toString(), {});
+  const response = await prismic.getByUID('posts', String(context.params.slug), {});
 
   const post = {
     first_publication_date: response.first_publication_date,
     data: {
-      title: RichText.asText(response.data.title),
+      title: response.data.title,
       banner: response.data.banner.url,
       author: RichText.asText(response.data.author),
       content: [

@@ -32,14 +32,19 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
-  console.log(postsPagination)
-  
+
   return (
     <div className={styles.container}>
       <Header />
 
       {postsPagination.results.map(post => (
-        <PostPreview slug={post.uid} title={post.data.title} subtitle={post.data.subtitle} author={post.data.author} date={post.first_publication_date} />
+        <PostPreview
+          slug={post.uid}
+          title={post.data.title}
+          subtitle={post.data.subtitle}
+          author={post.data.author}
+          date={post.first_publication_date}
+        />
       ))}
 
     </div>
@@ -57,7 +62,7 @@ export const getStaticProps: GetStaticProps = async () => {
       'posts.author'
     ],
   });
-console.log(postsResponse)
+
   const results = postsResponse.results.map(post => {
     return {
       uid: post.uid,
@@ -75,7 +80,7 @@ console.log(postsResponse)
       }
     }
   })
-  
+
   const postsPagination = {
     next_page: postsResponse.next_page,
     results
