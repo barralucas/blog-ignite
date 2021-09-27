@@ -10,6 +10,8 @@ import { getPrismicClient } from '../../services/prismic';
 import styles from './post.module.scss';
 import Header from '../../components/Header';
 import { Markup } from 'interweave';
+import format from 'date-fns/format';
+import ptBR from 'date-fns/locale/pt-BR';
 
 interface Post {
   first_publication_date: string | null;
@@ -35,31 +37,42 @@ interface PostProps {
 export default function Post({ post }: PostProps) {
   const router = useRouter();
 
-  if (router.isFallback) {
-    return (
-      <div className={styles.container}>
-        <Header />
+  return (
+    <div className={styles.container}>
+      <Header />
+
+      {router.isFallback ? (
+
         <h2 className={styles.loading}>Carregando...</h2>
-      </div>
-    );
-  } else {
-    return (
-      <div className={styles.container}>
-        <Header />
+
+      ) : (
+
         <div>
           <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="responsive" />
 
           <div className={styles.content}>
-          <Markup content={`<h1>${RichText.asHtml(post.data.title)}</h1>`} />
-          <Markup content={String(post.data.content[0].body[0])} />
-          <Markup content={post.data.content[1].heading} />
-          <Markup content={String(post.data.content[1].body[0])} />
+            <Markup content={`<h1>${RichText.asHtml(post.data.title)}</h1>`} />
+
+            <div className="post-info">
+              <h5>
+                <img src="/images/calendar.svg" alt="calendário" />
+                {post.first_publication_date}
+              </h5>
+              <h5>
+                <img src="/images/user.svg" alt="usuário" />
+                {RichText.asHtml(post.data.author)}
+              </h5>
+            </div>
+
+            <Markup content={RichText.asHtml(post.data.content[0].body[0])} />
+            <Markup content={RichText.asHtml(post.data.content[1].heading)} />
+            <Markup content={RichText.asHtml(post.data.content[1].body[0])} />
           </div>
 
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -85,22 +98,28 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const response = await prismic.getByUID('posts', String(context.params.slug), {});
 
   const post = {
-    first_publication_date: response.first_publication_date,
+    first_publication_date: format(
+      Date.parse(response.first_publication_date),
+      "dd MMM y",
+      {
+        locale: ptBR,
+      }
+    ),
     data: {
       title: response.data.title,
       banner: response.data.banner.url,
-      author: RichText.asText(response.data.author),
+      author: response.data.author,
       content: [
         {
-          heading: RichText.asHtml(response.data.content[0]?.heading),
+          heading: response.data.content[0]?.heading,
           body: [
-            RichText.asHtml(response.data.content[0]?.body)
+            response.data.content[0]?.body
           ]
         },
         {
-          heading: RichText.asHtml(response.data.content[1]?.heading),
+          heading: response.data.content[1]?.heading,
           body: [
-            RichText.asHtml(response.data.content[1]?.body)
+            response.data.content[1]?.body
           ]
         }
       ]
@@ -111,6 +130,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
     props: {
       post
     },
-    revalidate: 60 * 60 * 24, // 24 hours
+    revalidate: 60 * 60 * 24, // 24 hours   
   }
 };
