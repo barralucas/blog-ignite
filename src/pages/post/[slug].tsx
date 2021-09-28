@@ -38,40 +38,42 @@ export default function Post({ post }: PostProps) {
   const router = useRouter();
 
   return (
-    <div className={styles.container}>
-      <Header />
+    <h1>teste</h1>
+    //   <div className={styles.container}>
+    //     <Header />
 
-      {router.isFallback ? (
+    //     {router.isFallback ? (
 
-        <h2 className={styles.loading}>Carregando...</h2>
+    //       <h2 className={styles.loading}>Carregando...</h2>
 
-      ) : (
+    //     ) : (
 
-        <div>
-          <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="responsive" />
+    //       <div>
 
-          <div className={styles.content}>
-            <Markup content={`<h1>${RichText.asHtml(post.data.title)}</h1>`} />
+    //         <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="intrinsic" />
 
-            <div className="post-info">
-              <h5>
-                <img src="/images/calendar.svg" alt="calendário" />
-                {post.first_publication_date}
-              </h5>
-              <h5>
-                <img src="/images/user.svg" alt="usuário" />
-                {RichText.asHtml(post.data.author)}
-              </h5>
-            </div>
+    //         <div className={styles.content}>
+    //           <Markup content={`<h1>${RichText.asText(post.data.title)}</h1>`} />
 
-            <Markup content={RichText.asHtml(post.data.content[0].body[0])} />
-            <Markup content={RichText.asHtml(post.data.content[1].heading)} />
-            <Markup content={RichText.asHtml(post.data.content[1].body[0])} />
-          </div>
+    //           <div className="post-info">
+    //             <h5>
+    //               <img src="/images/calendar.svg" alt="calendário" />
+    //               {post.first_publication_date}
+    //             </h5>
+    //             <h5>
+    //               <img src="/images/user.svg" alt="usuário" />
+    //               {RichText.asText(post.data.author)}
+    //             </h5>
+    //           </div>
 
-        </div>
-      )}
-    </div>
+    //           <Markup content={RichText.asHtml(post.data.content[0].body[0])} />
+    //           <Markup content={RichText.asHtml(post.data.content[1].heading)} />
+    //           <Markup content={RichText.asHtml(post.data.content[1].body[0])} />
+    //         </div>
+
+    //       </div>
+    //     )}
+    //   </div>
   );
 }
 
@@ -97,38 +99,38 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const prismic = getPrismicClient();
   const response = await prismic.getByUID('posts', String(context.params.slug), {});
 
-  const post = {
-    first_publication_date: format(
-      Date.parse(response.first_publication_date),
-      "dd MMM y",
-      {
-        locale: ptBR,
-      }
-    ),
-    data: {
-      title: response.data.title,
-      banner: response.data.banner.url,
-      author: response.data.author,
-      content: [
-        {
-          heading: response.data.content[0]?.heading,
-          body: [
-            response.data.content[0]?.body
-          ]
-        },
-        {
-          heading: response.data.content[1]?.heading,
-          body: [
-            response.data.content[1]?.body
-          ]
-        }
-      ]
-    }
-  }
+  // const post = {
+  //   first_publication_date: format(
+  //     Date.parse(response.first_publication_date),
+  //     "dd MMM y",
+  //     {
+  //       locale: ptBR,
+  //     }
+  //   ),
+  //   data: {
+  //     title: response.data.title,
+  //     banner: response.data.banner.url,
+  //     author: response.data.author,
+  //     content: [
+  //       {
+  //         heading: response.data.content[0]?.heading,
+  //         body: [
+  //           response.data.content[0]?.body
+  //         ]
+  //       },
+  //       {
+  //         heading: response.data.content[1]?.heading,
+  //         body: [
+  //           response.data.content[1]?.body
+  //         ]
+  //       }
+  //     ]
+  //   }
+  // }
 
   return {
     props: {
-      post
+      post: response
     },
     revalidate: 60 * 60 * 24, // 24 hours   
   }
