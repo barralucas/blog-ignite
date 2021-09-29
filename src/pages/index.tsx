@@ -32,44 +32,25 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
-  const [dataFromSSG, setDataFromSSG] = useState([]);
-
-  useEffect(() => {
-
-    const dataFormatted = postsPagination.results.map((post: Post) => {
-
-      return {
-        uid: post.uid,
-        first_publication_date: format(
-          Date.parse(post.first_publication_date),
-          "dd MMM y",
-          {
-            locale: ptBR,
-          }
-        ),
-        data: {
-          title: post.data.title,
-          subtitle: post.data.subtitle,
-          author: post.data.author,
-        }
-      }
-
-    })
-
-    setDataFromSSG(dataFormatted);
-  }, [])
 
   return (
     <div className={styles.container}>
       <Header />
 
-      {dataFromSSG.map((post: any) => (
+      {postsPagination.results.map((post: Post) => (
         <PostPreview
+          key={post.uid}
           slug={post.uid}
           title={post.data.title}
           subtitle={post.data.subtitle}
           author={post.data.author}
-          date={post.first_publication_date}
+          date={format(
+            Date.parse(post.first_publication_date),
+            "dd MMM y",
+            {
+              locale: ptBR,
+            }
+          )}
         />
       ))}
 
@@ -83,41 +64,20 @@ export default function Home({ postsPagination }: HomeProps) {
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
   const postsResponse = await prismic.query([
-    Prismic.Predicates.at('document.type', 'posts')
+    Prismic.Predicates.at('document.type', 'posts1')
   ], {
     fetch: [
-      'posts.title',
-      'posts.subtitle',
-      'posts.author'
+      'posts1.title',
+      'posts1.subtitle',
+      'posts1.author'
     ],
   });
-
-  // const results = postsResponse.results.map(post => {
-
-  //   const ObjectContaining = {
-  //     uid: post.uid,
-  //     first_publication_date: format(
-  //       Date.parse(post.first_publication_date),
-  //       "dd MMM y",
-  //       {
-  //         locale: ptBR,
-  //       }
-  //     ),
-  //     data: {
-  //       title: post.data.title,
-  //       subtitle: post.data.subtitle,
-  //       author: post.data.author,
-  //     }
-  //   }
-
-  //   return ObjectContaining;
-  // })
 
   const postsPagination = {
     next_page: postsResponse.next_page,
     results: postsResponse.results
   }
-  console.log(postsPagination.results[0].data.t)
+
   return {
     props: {
       postsPagination
