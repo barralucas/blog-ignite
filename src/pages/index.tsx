@@ -32,12 +32,23 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [allPosts, setAllPosts] = useState(postsPagination.results);
+  const [nextPage, setNextPost] = useState(postsPagination.next_page);
+  console.log(nextPage, 'nextPage')
+
+  async function handleLoadMorePosts() {
+    const response = await (await fetch(nextPage)).json();
+
+    setAllPosts([...allPosts, ...response.results])
+
+    setNextPost(response.next_page);
+  }
 
   return (
     <div className={styles.container}>
       <Header />
 
-      {postsPagination.results.map((post: Post) => (
+      {allPosts.map((post: Post) => (
         <PostPreview
           key={post.uid}
           slug={post.uid}
@@ -54,8 +65,8 @@ export default function Home({ postsPagination }: HomeProps) {
         />
       ))}
 
-      {postsPagination.next_page && (
-        <button>Carregar mais posts</button>
+      {nextPage && (
+        <button onClick={handleLoadMorePosts}>Carregar mais posts</button>
       )}
     </div>
   );
@@ -71,13 +82,14 @@ export const getStaticProps: GetStaticProps = async () => {
       'posts1.subtitle',
       'posts1.author'
     ],
+    pageSize: 1,
   });
 
   const postsPagination = {
     next_page: postsResponse.next_page,
     results: postsResponse.results
   }
-
+  console.log(postsPagination)
   return {
     props: {
       postsPagination
