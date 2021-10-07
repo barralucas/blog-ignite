@@ -7,8 +7,7 @@ import { getPrismicClient } from '../services/prismic';
 import Prismic from '@prismicio/client';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
-import { RichText } from 'prismic-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // import commonStyles from '../styles/common.module.scss';
 
@@ -89,7 +88,7 @@ export const getStaticProps: GetStaticProps = async () => {
     next_page: postsResponse.next_page,
     results: postsResponse.results
   }
-  console.log(postsPagination)
+
   return {
     props: {
       postsPagination

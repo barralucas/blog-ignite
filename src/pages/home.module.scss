@@ -1,4 +1,18 @@
 .container {
     max-width: 720px;
     margin: 0 auto;
+
+    button {
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--highlight);
+
+        transition: filter 0.2s;
+
+        &:hover {
+            filter: brightness(0.8);
+        }
+    }
 }

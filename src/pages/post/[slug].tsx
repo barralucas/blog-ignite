@@ -9,9 +9,9 @@ import { getPrismicClient } from '../../services/prismic';
 // import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import Header from '../../components/Header';
-import { Markup } from 'interweave';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
+import { Head } from 'next/document';
 
 interface Post {
   first_publication_date: string | null;
@@ -37,101 +37,128 @@ interface PostProps {
 export default function Post({ post }: PostProps) {
   const router = useRouter();
 
+  if (router.isFallback) {
+    return <h2 className={styles.loading}>Carregando...</h2>;
+  }
+
+
+
   return (
-    <h1>teste</h1>
-    //   <div className={styles.container}>
-    //     <Header />
+    <div className={styles.container}>
+      <Head>
+        <title>{post.data.title} | space traveling</title>
+      </Head>
 
-    //     {router.isFallback ? (
+      <Header />
 
-    //       <h2 className={styles.loading}>Carregando...</h2>
+      <div>
 
-    //     ) : (
+        <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="intrinsic" />
 
-    //       <div>
+        <div className={styles.content}>
 
-    //         <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="intrinsic" />
+          <div className="post-info">
+            <h5>
+              <img src="/images/calendar.svg" alt="calendário" />
+              {post.first_publication_date}
+            </h5>
+            <h5>
+              <img src="/images/user.svg" alt="usuário" />
+              {post.data.author}
+            </h5>
+          </div>
 
-    //         <div className={styles.content}>
-    //           <Markup content={`<h1>${RichText.asText(post.data.title)}</h1>`} />
+          <section>
+            {post.data.content.map(item => (
+              <section key={item.heading}>
+                <h2>{item.heading}</h2>
+                <article
+                  dangerouslySetInnerHTML={{
+                    __html: RichText.asHtml(item.body),
+                  }}
+                />
+              </section>
+            ))}
+          </section>
+        </div>
 
-    //           <div className="post-info">
-    //             <h5>
-    //               <img src="/images/calendar.svg" alt="calendário" />
-    //               {post.first_publication_date}
-    //             </h5>
-    //             <h5>
-    //               <img src="/images/user.svg" alt="usuário" />
-    //               {RichText.asText(post.data.author)}
-    //             </h5>
-    //           </div>
-
-    //           <Markup content={RichText.asHtml(post.data.content[0].body[0])} />
-    //           <Markup content={RichText.asHtml(post.data.content[1].heading)} />
-    //           <Markup content={RichText.asHtml(post.data.content[1].body[0])} />
-    //         </div>
-
-    //       </div>
-    //     )}
-    //   </div>
+      </div>
+    </div>
   );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient();
-  const posts = await prismic.query(
-    Prismic.Predicates.at('document.type', 'posts'),
-  );
+  const posts = await prismic.query([
+    Prismic.predicates.at('document.type', 'post'),
+  ]);
+
+  const paths = posts.results.map(post => ({
+    params: { slug: post.uid },
+  }));
 
   return {
-    paths: [
-      {
-        params: {
-          slug: posts.results[0].slugs[0]
-        }
-      },
-    ],
-    fallback: true
-  }
+    paths,
+    fallback: true,
+  };
 };
 
-export const getStaticProps: GetStaticProps = async (context) => {
+export const getStaticProps: GetStaticProps = async ({
+  params: { slug },
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('posts', String(context.params.slug), {});
+  const response = await prismic.getByUID('post', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
 
-  // const post = {
-  //   first_publication_date: format(
-  //     Date.parse(response.first_publication_date),
-  //     "dd MMM y",
-  //     {
-  //       locale: ptBR,
-  //     }
-  //   ),
-  //   data: {
-  //     title: response.data.title,
-  //     banner: response.data.banner.url,
-  //     author: response.data.author,
-  //     content: [
-  //       {
-  //         heading: response.data.content[0]?.heading,
-  //         body: [
-  //           response.data.content[0]?.body
-  //         ]
-  //       },
-  //       {
-  //         heading: response.data.content[1]?.heading,
-  //         body: [
-  //           response.data.content[1]?.body
-  //         ]
-  //       }
-  //     ]
-  //   }
-  // }
+  if (!response) {
+    return {
+      notFound: true,
+    };
+  }
+
+  // const prevPost = (
+  //   await prismic.query(Prismic.predicates.at('document.type', 'post'), {
+  //     pageSize: 1,
+  //     after: response.id,
+  //     orderings: '[document.first_publication_date desc]',
+  //     fetch: ['post.title'],
+  //   })
+  // ).results[0];
+
+  // const nextPost = (
+  //   await prismic.query(Prismic.predicates.at('document.type', 'post'), {
+  //     pageSize: 1,
+  //     after: response.id,
+  //     orderings: '[document.first_publication_date]',
+  //     fetch: ['post.title'],
+  //   })
+  // ).results[0];
+
+  const post = {
+    first_publication_date: response.first_publication_date,
+    last_publication_date: response.last_publication_date,
+    uid: response.uid,
+    data: {
+      title: response.data.title,
+      subtitle: response.data.subtitle,
+      banner: {
+        url: response.data.banner.url,
+      },
+      author: response.data.author,
+      content: response.data.content,
+    },
+  };
 
   return {
     props: {
-      post: response
+      post,
+      // preview,
+      // prevPost: prevPost ?? null,
+      // nextPost: nextPost ?? null,
     },
-    revalidate: 60 * 60 * 24, // 24 hours   
-  }
+    revalidate: 60 * 60 * 24, // 24 Horas
+  };
 };
