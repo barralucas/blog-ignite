@@ -33,7 +33,6 @@ interface HomeProps {
 export default function Home({ postsPagination }: HomeProps) {
   const [allPosts, setAllPosts] = useState(postsPagination.results);
   const [nextPage, setNextPost] = useState(postsPagination.next_page);
-  console.log(nextPage, 'nextPage')
 
   async function handleLoadMorePosts() {
     const response = await (await fetch(nextPage)).json();

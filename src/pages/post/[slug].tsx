@@ -1,5 +1,4 @@
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
 
@@ -116,22 +115,7 @@ export const getStaticProps: GetStaticProps = async ({
   params: { slug }
 }) => {
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('post', String(slug), {});
-
-  const post = {
-    first_publication_date: response.first_publication_date,
-    last_publication_date: response.last_publication_date,
-    uid: response.uid,
-    data: {
-      title: response.data.title,
-      subtitle: response.data.subtitle,
-      banner: {
-        url: response.data.banner.url,
-      },
-      author: response.data.author,
-      content: response.data.content,
-    },
-  };
+  const post = await prismic.getByUID('posts1', String(slug), {});
 
   return {
     props: {
