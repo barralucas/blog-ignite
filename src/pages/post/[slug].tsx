@@ -1,17 +1,17 @@
-import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { GetStaticPaths, GetStaticProps } from 'next';
+
+import { ptBR } from 'date-fns/locale';
+import { format, parseISO } from 'date-fns';
+import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
+
 import { RichText } from 'prismic-dom';
 import Prismic from '@prismicio/client';
-import Image from 'next/image';
-
 import { getPrismicClient } from '../../services/prismic';
 
-// import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
-import Header from '../../components/Header';
-import format from 'date-fns/format';
-import ptBR from 'date-fns/locale/pt-BR';
-import { Head } from 'next/document';
 
 interface Post {
   first_publication_date: string | null;
@@ -41,31 +41,41 @@ export default function Post({ post }: PostProps) {
     return <h2 className={styles.loading}>Carregando...</h2>;
   }
 
+  const readingTime = post.data.content.reduce((acc, content) => {
+    const textBody = RichText.asText(content.body);
+    const split = textBody.split(' ');
+    const numberWords = split.length;
 
+    const result = Math.ceil(numberWords / 200);
+    return acc + result;
+  }, 0);
 
   return (
-    <div className={styles.container}>
+    <>
       <Head>
-        <title>{post.data.title} | space traveling</title>
+        <title>{post.data.title} | Space Traveling</title>
       </Head>
 
-      <Header />
+      <section className={styles.banner}>
+        <img src={post.data.banner.url} alt={post.data.title} />
+      </section>
 
-      <div>
-
-        <Image src={String(post.data.banner)} alt="banner" width={720} height={400} layout="intrinsic" />
-
-        <div className={styles.content}>
-
-          <div className="post-info">
-            <h5>
-              <img src="/images/calendar.svg" alt="calendário" />
-              {post.first_publication_date}
-            </h5>
-            <h5>
-              <img src="/images/user.svg" alt="usuário" />
-              {post.data.author}
-            </h5>
+      <main className={styles.container}>
+        <div className={styles.postContent}>
+          <h1>{post.data.title}</h1>
+          <div className={styles.postInfo}>
+            <time>
+              <FiCalendar />{' '}
+              {format(parseISO(post.first_publication_date), 'dd MMM yyyy', {
+                locale: ptBR,
+              })}
+            </time>
+            <p>
+              <FiUser /> {post.data.author}
+            </p>
+            <time>
+              <FiClock /> {readingTime} min
+            </time>
           </div>
 
           <section>
@@ -81,9 +91,8 @@ export default function Post({ post }: PostProps) {
             ))}
           </section>
         </div>
-
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
 
@@ -104,38 +113,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({
-  params: { slug },
-  preview = false,
-  previewData,
+  params: { slug }
 }) => {
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID('post', String(slug), {
-    ref: previewData?.ref ?? null,
-  });
-
-  if (!response) {
-    return {
-      notFound: true,
-    };
-  }
-
-  // const prevPost = (
-  //   await prismic.query(Prismic.predicates.at('document.type', 'post'), {
-  //     pageSize: 1,
-  //     after: response.id,
-  //     orderings: '[document.first_publication_date desc]',
-  //     fetch: ['post.title'],
-  //   })
-  // ).results[0];
-
-  // const nextPost = (
-  //   await prismic.query(Prismic.predicates.at('document.type', 'post'), {
-  //     pageSize: 1,
-  //     after: response.id,
-  //     orderings: '[document.first_publication_date]',
-  //     fetch: ['post.title'],
-  //   })
-  // ).results[0];
+  const response = await prismic.getByUID('post', String(slug), {});
 
   const post = {
     first_publication_date: response.first_publication_date,
@@ -154,10 +135,7 @@ export const getStaticProps: GetStaticProps = async ({
 
   return {
     props: {
-      post,
-      // preview,
-      // prevPost: prevPost ?? null,
-      // nextPost: nextPost ?? null,
+      post
     },
     revalidate: 60 * 60 * 24, // 24 Horas
   };
