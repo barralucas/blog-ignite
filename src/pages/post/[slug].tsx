@@ -31,6 +31,8 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  // nextPost: {} | undefined;
+  // prevPost: {} | undefined;
 }
 
 export default function Post({ post }: PostProps) {
@@ -117,9 +119,31 @@ export const getStaticProps: GetStaticProps = async ({
   const prismic = getPrismicClient();
   const post = await prismic.getByUID('posts1', String(slug), {});
 
+  const nextPost = (
+    await prismic.query(Prismic.predicates.at('document.type', 'posts1'), {
+      pageSize: 1,
+      after: `${post.id}`,
+      orderings: '[document.first_publication_date desc]',
+      fetch: ['post.uid', 'post.title'],
+    })
+  ).results[0];
+  console.log('nextPost: ', nextPost);
+
+  const prevPost = (
+    await prismic.query(Prismic.predicates.at('document.type', 'posts1'), {
+      pageSize: 1,
+      after: `${post.id}`,
+      orderings: '[document.first_publication_date]',
+      fetch: ['post.uid', 'post.title'],
+    })
+  ).results[0];
+  console.log('prevPost: ', prevPost);
+
   return {
     props: {
-      post
+      post,
+      // nextPost,
+      // prevPost
     },
     revalidate: 60 * 60 * 24, // 24 Horas
   };
