@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
 
@@ -31,11 +32,21 @@ interface Post {
 
 interface PostProps {
   post: Post;
-  // nextPost: {} | undefined;
-  // prevPost: {} | undefined;
+  nextPost: {
+    uid: string;
+    data: {
+      title: string;
+    }
+  };
+  prevPost: {
+    uid: string;
+    data: {
+      title: string;
+    }
+  };
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post, nextPost, prevPost }: PostProps) {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -93,6 +104,25 @@ export default function Post({ post }: PostProps) {
           </section>
         </div>
       </main>
+
+      <footer className={styles.navigationPosts}>
+        {prevPost && (
+          <Link href={`/post/${prevPost.uid}`}>
+            <div>
+              <h2>{prevPost.data.title}</h2>
+              <strong>Post anterior</strong>
+            </div>
+          </Link>
+        )}
+        {nextPost && (
+          <Link href={`/post/${nextPost.uid}`}>
+            <div>
+              <h2>{nextPost.data.title}</h2>
+              <strong>Próximo post</strong>
+            </div>
+          </Link>
+        )}
+      </footer>
     </>
   );
 }
@@ -139,11 +169,31 @@ export const getStaticProps: GetStaticProps = async ({
   ).results[0];
   console.log('prevPost: ', prevPost);
 
+  if (!nextPost) {
+    return {
+      props: {
+        post,
+        prevPost
+      },
+      revalidate: 60 * 60 * 24, // 24 Horas
+    };
+  }
+
+  if (!prevPost) {
+    return {
+      props: {
+        post,
+        nextPost
+      },
+      revalidate: 60 * 60 * 24, // 24 Horas
+    };
+  }
+
   return {
     props: {
       post,
-      // nextPost,
-      // prevPost
+      nextPost,
+      prevPost
     },
     revalidate: 60 * 60 * 24, // 24 Horas
   };

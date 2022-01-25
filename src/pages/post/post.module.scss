@@ -73,3 +73,35 @@
         }
     }
 }
+
+.navigationPosts {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 50px 0;
+    border-top: 1px solid #808080;
+    display: flex;
+    justify-content: space-between;
+
+    div {
+        cursor: pointer;
+        height: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        strong {
+            color: var(--highlight);
+        }
+
+        &:hover {
+            h2 {
+                filter: brightness(0.8);
+            }
+
+            strong {
+                filter: brightness(0.8);
+            }
+        }
+    }
+}
