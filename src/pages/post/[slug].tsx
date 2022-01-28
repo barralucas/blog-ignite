@@ -11,6 +11,8 @@ import { RichText } from 'prismic-dom';
 import Prismic from '@prismicio/client';
 import { getPrismicClient } from '../../services/prismic';
 
+import { Comments } from '../../components/Comments';
+
 import styles from './post.module.scss';
 
 interface Post {
@@ -65,7 +67,7 @@ export default function Post({ post, nextPost, prevPost }: PostProps) {
   return (
     <>
       <Head>
-        <title>{post.data.title} | Space Traveling</title>
+        <title>{post.data.title}</title>
       </Head>
 
       <section className={styles.banner}>
@@ -105,6 +107,7 @@ export default function Post({ post, nextPost, prevPost }: PostProps) {
         </div>
       </main>
 
+      <Comments />
       <footer className={styles.navigationPosts}>
         {prevPost && (
           <Link href={`/post/${prevPost.uid}`}>
@@ -157,7 +160,6 @@ export const getStaticProps: GetStaticProps = async ({
       fetch: ['post.uid', 'post.title'],
     })
   ).results[0];
-  console.log('nextPost: ', nextPost);
 
   const prevPost = (
     await prismic.query(Prismic.predicates.at('document.type', 'posts1'), {
@@ -167,7 +169,6 @@ export const getStaticProps: GetStaticProps = async ({
       fetch: ['post.uid', 'post.title'],
     })
   ).results[0];
-  console.log('prevPost: ', prevPost);
 
   if (!nextPost) {
     return {
