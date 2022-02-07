@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { GetStaticPaths, GetStaticProps } from 'next';
 
 import { ptBR } from 'date-fns/locale';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, getHours } from 'date-fns';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
 
 import { RichText } from 'prismic-dom';
@@ -17,6 +17,7 @@ import styles from './post.module.scss';
 
 interface Post {
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -50,6 +51,7 @@ interface PostProps {
 
 export default function Post({ post, nextPost, prevPost }: PostProps) {
   const router = useRouter();
+  const lastPublication = new Date(post?.last_publication_date);
 
   if (router.isFallback) {
     return <h2 className={styles.loading}>Carregando...</h2>;
@@ -78,6 +80,17 @@ export default function Post({ post, nextPost, prevPost }: PostProps) {
         <div className={styles.postContent}>
           <h1>{post.data.title}</h1>
           <div className={styles.postInfo}>
+            {post?.last_publication_date && (
+              <p>
+                * Editado
+                <time>
+                {format(parseISO(post.last_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })},
+                às {getHours(lastPublication)}h
+                </time>
+              </p>
+            )}
             <time>
               <FiCalendar />{' '}
               {format(parseISO(post.first_publication_date), 'dd MMM yyyy', {
@@ -151,6 +164,7 @@ export const getStaticProps: GetStaticProps = async ({
 }) => {
   const prismic = getPrismicClient();
   const post = await prismic.getByUID('posts1', String(slug), {});
+  console.log('post: ', post);
 
   const nextPost = (
     await prismic.query(Prismic.predicates.at('document.type', 'posts1'), {
